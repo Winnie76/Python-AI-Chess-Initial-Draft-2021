@@ -41,7 +41,7 @@ def main():
                 loc = {tuple(item[1:3]): item[0]}
                 state.update(loc)
         # print('state is', state)
-        # {(2, -3): 'P', (3, -3): 'R', (4, -2): 'S', (-4, 4): 'r', (-3, -1): 'p', (-3, 1): 'p', (-3, 3): 's', (-2, 4): 'r', (0, 3): 'p', (2, 2): 's', (-1, 1): '', (0, 0): '', (2, -1): '', (2, 0): '', (3, 0): ''}
+        # {(2, -3): 'P', (3, -3): 'R', (4, -2): 'S', (-4, 4): 'r', (-3, -1): 'p', (-3, 1): 'p', (-3, 3): 's', (-2, 4): 'r', (0, 3): 'p', (2, 2): 's', (-1, 1): 'Block', (0, 0): 'Block', (2, -1): 'Block', (2, 0): 'Block', (3, 0): 'Block'}
 
         # print_board(state)
         #              .-'-._.-'-._.-'-._.-'-._.-'-.
@@ -95,7 +95,7 @@ def main():
 
     # sorted_goal_dict = sorted dictionary based on distance btw upper and lower token
     sorted_goal_dict = func_sort_distance(goal_dictionary)
-    print(sorted_goal_dict)
+    # print(sorted_goal_dict)
     # {('P', 2, -3): [['r', -2, 4, 8.06225774829855], ['r', -4, 4, 9.219544457292887]], ('R', 3, -3): [['s', 2, 2, 5.0990195135927845], ['s', -3, 3, 8.48528137423857]], ('S', 4, -2): [['p', 0, 3, 6.4031242374328485], ['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909]]}
 
     # open_close_dict = {(upper token 1): [[open list], [close list]],
@@ -124,10 +124,10 @@ def main():
 
 #--------------------------------------------functions needed-------------------------------------------------------#
 # def func_update_open(upper_tuple, open_close_dict, sorted_goal_dict, state):
-    # return list of locations [(1,2), (2,5), (-1,3), (0,6), (9,3), (3,4)]
 #     hex_neighbors_list = six_hex_surrond(list(upper_tuple))
 
 
+# return list of locations [(1,2), (2,5), (-1,3), (0,6), (9,3), (3,4)]
 def six_hex_surrond(token):  # find the six surronding hex for a given hex
     if len(token) == 3:
         token = token[1:3]
