@@ -95,7 +95,7 @@ def main():
 
     # sorted_goal_dict = sorted dictionary based on distance btw upper and lower token
     sorted_goal_dict = func_sort_distance(goal_dictionary)
-    # print(sorted_goal_dict)
+    print(sorted_goal_dict)
     # {('P', 2, -3): [['r', -2, 4, 8.06225774829855], ['r', -4, 4, 9.219544457292887]], ('R', 3, -3): [['s', 2, 2, 5.0990195135927845], ['s', -3, 3, 8.48528137423857]], ('S', 4, -2): [['p', 0, 3, 6.4031242374328485], ['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909]]}
 
     # open_close_dict = {(upper token 1): [[open list], [close list]],
