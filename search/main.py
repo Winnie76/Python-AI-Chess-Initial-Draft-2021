@@ -80,20 +80,15 @@ def main():
     goal_dictionary = {}
     for pair in defeatable_list:
         # print(pair[0])['S', -1, -1]['R', 1, -3]['P', 2, -2]
-        # print(pair[1]) ['p', -1, 3]['s', 1, 3]['r', -2, 4]
+        #      (pair[1]) ['p', -1, 3]['s', 1, 3]['r', -2, 4]
         distance = func_upper_lower_distance(pair[0], pair[1])
-        # print(distance)--worked
-        # print(list(goal_dictionary.keys()))
         if tuple(pair[0]) not in list(goal_dictionary.keys()):
             goal_dictionary[tuple(pair[0])] = [pair[1]+[distance]]
-            # print(goal_dictionary[tuple(pair[0])])
         else:
             if pair[1]+[distance] not in goal_dictionary[tuple(pair[0])]:
                 goal_dictionary[tuple(pair[0])].append(pair[1]+[distance])
     # print(goal_dictionary)
     # {('P', 2, -3): [['r', -4, 4, 9.219544457292887], ['r', -2, 4, 8.06225774829855]], ('R', 3, -3): [['s', -3, 3, 8.48528137423857], ['s', 2, 2, 5.0990195135927845]], ('S', 4, -2): [['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909], ['p', 0, 3, 6.4031242374328485]]}
-
-    # sorted_goal_dict = sorted dictionary based on distance btw upper and lower token
     sorted_goal_dict = func_sort_distance(goal_dictionary)
     # print(sorted_goal_dict)
     # {('P', 2, -3): [['r', -2, 4, 8.06225774829855], ['r', -4, 4, 9.219544457292887]], ('R', 3, -3): [['s', 2, 2, 5.0990195135927845], ['s', -3, 3, 8.48528137423857]], ('S', 4, -2): [['p', 0, 3, 6.4031242374328485], ['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909]]}
@@ -105,7 +100,6 @@ def main():
     # all_uppers_list = [('P', 2, -3), ('R', 3, -3), ('S', 4, -2)]
     # print(goal_dictionary) --> {} already empty bc of func_sort_distance
     all_uppers_list = list(sorted_goal_dict.keys())
-
     # init open_close_dict here
     open_close_dict = open_close_dict_build(
         state, all_uppers_list, sorted_goal_dict)
@@ -116,16 +110,10 @@ def main():
     turn = 0
     while (bool(sorted_goal_dict) == True) and (turn == 0):
         turn += 1
-        # loop through all upper tokens and put possible moves into open list of open_close_dict
+        # update open list (next possible move) for all upper token
         for upper_tuple in all_uppers_list:
             if upper_tuple in sorted_goal_dict.keys():
-                # print(turn, 'yes')
-                # NEED func_update_open HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                # func_update_open put all available next move AND total cost (= prev cost + future cost) for current upper token into the open list (open list is in open_close_dict)
-                # func_update_open doesn't move upper token, it reads the current upper token tuple from argument;
-                #                                          reads the corresponding goal from sorted_goal_dict,
-                #                                          reads the current coordinate upper token is on from close list in open_close_dict
-                #                                          and put possible moves into open list in open_close_dict by using state_dictionary
+                # update open list
                 open_close_dict[upper_tuple][0] = func_open_list(
                     state, open_close_dict[upper_tuple][1][-1], sorted_goal_dict[upper_tuple][0][0:3])
                 # print(open_close_dict)
@@ -164,11 +152,10 @@ def main():
     #             sorted_goal_dict = func_remove_value_or_both(upper_tuple, sorted_goal_dict, open_close_dict)
 
 #--------------------------------------------functions needed-------------------------------------------------------#
-# def func_update_open(upper_tuple, open_close_dict, sorted_goal_dict, state):
-#     hex_neighbors_list = six_hex_surrond(list(upper_tuple))
-
 
 # build initial open_close_dict
+
+
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
     open_close_dict = {}
     for u in upper:
@@ -182,14 +169,11 @@ def open_close_dict_build(state, upper, sorted_goal_dictionary):
         open_close_dict.update(mid)
     return open_close_dict
 
-# given state of board, the upper token position, and its target
-# return open list for that upper token
 
-# token is upper token current position open_close_list[upper_tuple][1][-1] = [1,2]
-# target is sorted_goal_dict[upper_tuple][0][0:3] = ['s',1,2]
-
-
-# record all the possible new location
+# func_open_list put all available next move AND total cost (= future cost) for current upper token into the open list (open list is in open_close_dict)
+# func_open_list doesn't move upper token, it reads the current upper token position[x, y] from argument (last element of close list in open_close_dict);
+#                                          reads the corresponding target ['r', x, y] from sorted_goal_dict,
+#                                          and put possible moves into open list in open_close_dict by using state_dictionary
 def func_open_list(state, upper_current_pos, target):
     # upper_current_pos means upper upper_current_pos
     ol = []
@@ -223,6 +207,7 @@ def func_open_list(state, upper_current_pos, target):
         cost = func_upper_lower_distance(movable_hex, target)
         movable_hex.append(cost)
         ol_with_cost.append(movable_hex)
+
     return ol_with_cost
 
 
