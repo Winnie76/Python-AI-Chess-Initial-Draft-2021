@@ -102,24 +102,34 @@ def main():
     #                   (upper token 2): [[open list], [close list]],
     #                   (upper token 3): [[open list], [close list]],}
     open_close_dict = {}
-    # all_uppers_list = [('P', 2, -3), ('R', 3, -3), ('S', 4, -2)]pl
-    all_uppers_list = list(goal_dictionary.keys())
+    # all_uppers_list = [('P', 2, -3), ('R', 3, -3), ('S', 4, -2)]
+    # print(goal_dictionary) --> {} already empty bc of func_sort_distance
+    all_uppers_list = list(sorted_goal_dict.keys())
 
-    # turn = 0
-    # while (bool(sorted_goal_dict) == True) and (turn == 0):
-    #     turn += 1
-    #     # loop through all upper tokens and put possible moves into open list of open_close_dict
-    #     for upper_tuple in all_uppers_list:
-    #         if upper_tuple in sorted_goal_dict.keys():
-    #             # print(turn, 'yes')
-    #             # NEED func_update_open HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #             # func_update_open put all available next move AND total cost (= prev cost + future cost) for current upper token into the open list (open list is in open_close_dict)
-    #             # func_update_open doesn't move upper token, it reads the current upper token tuple from argument;
-    #             #                                          reads the corresponding goal from sorted_goal_dict,
-    #             #                                          reads the current coordinate upper token is on from close list in open_close_dict
-    #             #                                          and put possible moves into open list in open_close_dict by using state_dictionary
-    #             open_close_dict = func_update_open(
-    #                 upper_tuple, open_close_dict, sorted_goal_dict, state)
+    # init open_close_dict here
+    open_close_dict = open_close_dict_build(
+        state, all_uppers_list, sorted_goal_dict)
+    # print(open_close_dict)
+    #  -->  {('P', 2, -3): [[], [[2, -3]]], ('R', 3, -3): [[], [[3, -3]]], ('S', 4, -2): [[], [[4, -2]]]}
+    # i want {('P', 2, -3): [[[1,2,totol_cost], [2,3,total_cost]......], [[1,2],[2,3],[3,4],.....[target]]], ('R', 3, -3): [[], []], ('S', 4, -2): [[], []]}
+
+    turn = 0
+    while (bool(sorted_goal_dict) == True) and (turn == 0):
+        turn += 1
+        # loop through all upper tokens and put possible moves into open list of open_close_dict
+        for upper_tuple in all_uppers_list:
+            if upper_tuple in sorted_goal_dict.keys():
+                # print(turn, 'yes')
+                # NEED func_update_open HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # func_update_open put all available next move AND total cost (= prev cost + future cost) for current upper token into the open list (open list is in open_close_dict)
+                # func_update_open doesn't move upper token, it reads the current upper token tuple from argument;
+                #                                          reads the corresponding goal from sorted_goal_dict,
+                #                                          reads the current coordinate upper token is on from close list in open_close_dict
+                #                                          and put possible moves into open list in open_close_dict by using state_dictionary
+                open_close_dict[upper_tuple][0] = func_open_list(
+                    state, open_close_dict[upper_tuple][1][-1], sorted_goal_dict[upper_tuple][0][0:3])
+                # print(open_close_dict)
+                # --> {('P', 2, -3): [[[1, -3, 7.615773105863909], [2, -4, 8.94427190999916], [3, -4, 9.433981132056603], [2, -2, 7.211102550927978], [1, -2, 6.708203932499369], [4, -4, 10.0], [4, -3, 9.219544457292887], [3, -2, 7.810249675906654]], [[2, -3]]], ('R', 3, -3): [[[3, -4, 6.082762530298219], [4, -4, 6.324555320336759], [4, -3, 5.385164807134504], [3, -2, 4.123105625617661], [2, -2, 4.0], [1, -2, 4.123105625617661], [1, -3, 5.0990195135927845], [2, -4, 6.0]], [[3, -3]]], ('S', 4, -2): [[[3, -2, 5.830951894845301], [4, -3, 7.211102550927978], [5, -3, 7.810249675906654], [5, -2, 7.0710678118654755], [4, -1, 5.656854249492381], [3, -1, 5.0]], [[4, -2]]]}
 
     # # loop through all upper tokens again and print next move for all upper tokens
     # # why use 2 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
@@ -158,7 +168,82 @@ def main():
 #     hex_neighbors_list = six_hex_surrond(list(upper_tuple))
 
 
-# return list of locations [(1,2), (2,5), (-1,3), (0,6), (9,3), (3,4)]
+# build initial open_close_dict
+def open_close_dict_build(state, upper, sorted_goal_dictionary):
+    open_close_dict = {}
+    for u in upper:
+        #target = sorted_goal_dictionary[u][0]
+        #ol = func_open_list(state, list(u), target)
+        #cl = close_list[u]
+        ol = []
+        cl = []
+        cl.append(list(u[1:3]))
+        mid = {u: [ol, cl]}
+        open_close_dict.update(mid)
+    return open_close_dict
+
+# given state of board, the upper token position, and its target
+# return open list for that upper token
+
+# token is upper token current position open_close_list[upper_tuple][1][-1] = [1,2]
+# target is sorted_goal_dict[upper_tuple][0][0:3] = ['s',1,2]
+
+
+# record all the possible new location
+def func_open_list(state, upper_current_pos, target):
+    # upper_current_pos means upper upper_current_pos
+    ol = []
+    ol_with_cost = []
+    # six hex connected to the upper_current_pos
+    layer1 = six_hex_surrond(upper_current_pos)
+
+    # slide for all possible surrounding hexes
+    for surround_item in layer1:
+        #surround_item is [1,2]
+        ol = if_ol_append(state, surround_item, upper_current_pos, ol)
+
+    # swing
+    for i in range(6):
+        surround_item = layer1[i]
+        if (tuple(surround_item) in state):
+            # have upper upper_current_pos --> can swing
+            if (state[tuple(surround_item)].isupper()):
+                # six hex connected to the upper upper_current_pos for swing
+                layer2 = six_hex_surrond(surround_item)
+                for j in range(i-1, i+2, 1):  # three hex opposite side
+                    if (j == 6):  # the hex next to no.5 in the clockwise list is no.0 and no.4
+                        ol = if_ol_append(
+                            state, layer2[0], upper_current_pos, ol)
+                    else:
+                        ol = if_ol_append(
+                            state, layer2[j], upper_current_pos, ol)
+    for movable_hex in ol:
+        movable_hex = list(movable_hex)
+        #print('movable_hex', movable_hex, 'target', target)
+        cost = func_upper_lower_distance(movable_hex, target)
+        movable_hex.append(cost)
+        ol_with_cost.append(movable_hex)
+    return ol_with_cost
+
+
+def if_ol_append(state, item, token, ol):  # check if the item should be added to open list
+    new_ol = []
+    for element in ol:
+        new_ol.append(element[0:2])
+    if item not in new_ol:  # to avoid double record
+        if tuple(item) in state:
+            # append if not block or undefeatable lower token
+            if not ((state[tuple(item)] == 'Block') | (if_defeat(token, item) == 0)):
+                ol.append(item)
+        # 这里的else是 如果 item不在state里吗？但如果不在， 那为什么存在？
+        else:
+            ol.append(item)
+    else:
+        return ol
+    return ol
+
+
+# return list of locations [[1,2], [2,5], [-1,]), [0,6], [9,3], [3,4]]
 def six_hex_surrond(token):  # find the six surronding hex for a given hex
     if len(token) == 3:
         token = token[1:3]
@@ -168,7 +253,7 @@ def six_hex_surrond(token):  # find the six surronding hex for a given hex
     for item in action:
         x = item[0]+token[0]
         y = item[1]+token[1]
-        loc = (x, y)  # coordinate of the hex
+        loc = [x, y]  # coordinate of the hex
         six_hex.append(loc)
     return six_hex
 
@@ -201,6 +286,9 @@ def func_sort_distance(goal_dictionary):
 
 
 def func_upper_lower_distance(ut, lt):
+    if len(ut) == 2:
+        distance = math.sqrt((ut[1]-lt[2])**2 + (ut[0]-lt[1])**2)
+        return distance
     distance = math.sqrt((ut[2]-lt[2])**2 + (ut[1]-lt[1])**2)
     return distance
 

@@ -4,7 +4,7 @@ def if_ol_append(state, item, token, ol):  # check if the item should be added t
     if item not in ol:  # avoid double record
         if item in state:
             # append if not block or undefeatable lower token
-            if not ((state[item] == '') | (if_defeat(token, item) == 0)):
+            if not ((state[item] == 'Block') | (if_defeat(token, item) == 0)):
                 ol.append(item)
         else:
             ol.append(item)
