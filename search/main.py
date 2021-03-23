@@ -203,9 +203,6 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
         del state[upper_tuple[1:3]]
         return state
-        # update the state
-        # print the move
-        # build initial open_close_dict
 
 
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
