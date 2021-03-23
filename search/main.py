@@ -193,11 +193,14 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
                 # find max cost for random move so that it won't affect other upper tokens'movement
                 if max_cost < cost:
                     max_cost = cost
+                    #print('max cost', max_cost)
                     #final_random_move = [x,y,cost]
                     final_random_move = possible_with_cost[possible_move_all_tokens.index(
-                        next_move)].append(upper_tuple[0])
-        print(tuple(final_random_move[0:2]))
-        print(final_random_move[-1])
+                        next_move)] + [upper_tuple[0]]
+                    # print(final_random_move)
+        # print(final_random_move)
+        # print(tuple(final_random_move[0:2]))
+        # print(final_random_move[-1])
         state[tuple(final_random_move[0:2])] = final_random_move[-1]
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
