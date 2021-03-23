@@ -161,6 +161,7 @@ def main():
 
 
 def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dict):
+
     # if upper_tuple already reached the goal
     possible_random_move = []
     if upper_tuple not in sorted_goal_dict.keys():
@@ -197,15 +198,16 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
                     #final_random_move = [x,y,cost]
                     final_random_move = possible_with_cost[possible_move_all_tokens.index(
                         next_move)] + [upper_tuple[0]]
-                    # print(final_random_move)
-        # print(final_random_move)
-        # print(tuple(final_random_move[0:2]))
-        # print(final_random_move[-1])
+
         state[tuple(final_random_move[0:2])] = final_random_move[-1]
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
         del state[upper_tuple[1:3]]
         return state
+
+    # need to write 'if upper_tuple not in sorted_goal_dict.keys():' here !!!!!
+    # ...
+    # ...未完待续
 
 
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
