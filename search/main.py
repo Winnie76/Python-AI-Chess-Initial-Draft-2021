@@ -110,7 +110,8 @@ def main():
 
     # del sorted_goal_dict[('P', 2, -3)]
     turn = 0
-    while (bool(sorted_goal_dict) == True) and (turn == 0):
+    # while (bool(sorted_goal_dict) == True) and (turn == 0):
+    while bool(sorted_goal_dict) == True:
         turn += 1
         # update open list (next possible move) for all upper token
         for upper_tuple in all_uppers_list:
@@ -124,39 +125,93 @@ def main():
         # loop through all upper tokens again and print next move for all upper tokens
         # why use 2 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
         # maybe can find a way to put into one loop. but i will go with this method first
-        del sorted_goal_dict[('P', 2, -3)]
+        #del sorted_goal_dict[('P', 2, -3)]
         for upper_tuple in all_uppers_list:
             # upper token already reached all goals
             if upper_tuple not in sorted_goal_dict.keys():
                 # NEED func_update_state HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # func_update_state updates the state
                 # if reached goal already, then it will make a best random movement for upper token , update state and print the movement
-                # if not reached goal, then based on open_close_list movement, it will update the state according to that and print the movement
+                # if not reached goal, then based on open_close_dict movement, it will update the state according to that and print the movement
                 # so the function reads which upper token it is from argument, read the current state, read the open_close_dict to know which movement to update and then update the state
                 state = func_update_state(turn,
                                           upper_tuple, state, open_close_dict, sorted_goal_dict)
-            # upper token still have goal to reach
-            # else:
-            #     # NEED func_update_close HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            #     # func_update_close only updates the close list (which is the action/movement of that upper token) in open_close_dict
-            #     # it read upper_tuple from argument to know which upper token to update
-            #     # it reads open-close_list and make a decision based on all possible moves and current state of board
-            #     open_close_dict = func_update_close(
-            #         upper_tuple, open_close_list, state)
-            #     # based on open_close_list movement, it will update the state according to that and print the movement
-            #     state = func_update_state(turn, upper_tuple, state, open_close_dict)
 
-            #     # NEED func_check_goal_reached HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            #     # check if upper token reached goal or not
-            #     # if upper token reached its goal, delete that value in sorted_goal_dict, and delete that upper token (key&value) in open_close_list
-            #     # if upper token reached all goals, delete that key-value pair in sorted_goal_dict, and delete that upper token (key&value) in open_close_list
-            #     if func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict) == 1:
-            #         open_close_dict.remove(upper_tuple)
-            #         # NEED func_remove_value_or_both HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            #         sorted_goal_dict = func_remove_value_or_both(
-            #             upper_tuple, sorted_goal_dict, open_close_dict)
+            # upper token still have goal to reach
+            else:
+                open_close_dict = func_update_close(
+                    upper_tuple, open_close_dict, state)
+                # based on open_close_dict movement, it will update the state according to that and print the movement
+                state = func_update_state(
+                    turn, upper_tuple, state, open_close_dict, sorted_goal_dict)
+
+                func_check_goal_reached(
+                    upper_tuple, sorted_goal_dict, open_close_dict)
 
 #--------------------------------------------functions needed-------------------------------------------------------#
+# check if upper token reached goal or not
+# if upper token reached its goal, delete that value in sorted_goal_dict, and delete that upper token (key&value) in open_close_dict
+# if upper token reached all goals, delete that key-value pair in sorted_goal_dict, and delete that upper token (key&value) in open_close_dict
+
+
+def func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict):
+    if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][0][1:3]:
+        if len(sorted_goal_dict[upper_tuple]) == 1:
+            del sorted_goal_dict[upper_tuple]
+        else:
+            sorted_goal_dict[upper_tuple] = sorted_goal_dict[upper_tuple][1:]
+        del open_close_dict[upper_tuple]
+
+
+# func_update_close only updates the close list (which is the action/movement of that upper token) in open_close_dict
+# it read upper_tuple from argument to know which upper token to update
+# it reads open-close_list and make a decision based on all possible moves and current state of board
+def func_update_close(upper_tuple, open_close_dict, state):
+
+    min_cost_move = func_min_move(open_close_dict, upper_tuple)
+
+    min_move_other_upper = []
+    for upper_tuple_i in list(open_close_dict.keys()):
+        if upper_tuple_i != upper_tuple:
+            min_move_other_upper.append(
+                func_min_move(open_close_dict, upper_tuple_i))
+
+    same_min_move = 0
+    for other_move in min_move_other_upper:
+        if other_move == min_cost_move:
+            same_min_move += 1
+
+    if same_min_move == 2:
+        print('ERROR--2 SAME MIN_MOVE--NO ALGO WROTE FOR THIS CASE--NEED TO WRITE ONE ALGO')
+        open_close_dict[upper_tuple][0].remove(min_cost_move)
+        min_move = func_min_move(open_close_dict, upper_tuple)
+        open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+        open_close_dict[upper_tuple][0] = []
+        return open_close_dict
+        # sys.exit()
+    if same_min_move == 1:
+        open_close_dict[upper_tuple][0].remove(min_cost_move)
+        min_move = func_min_move(open_close_dict, upper_tuple)
+        open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+        open_close_dict[upper_tuple][0] = []
+        return open_close_dict
+    else:
+        # add the movement into closed list
+        open_close_dict[upper_tuple][1].append(list(min_cost_move[0:2]))
+        # clear open list
+        open_close_dict[upper_tuple][0] = []
+        return open_close_dict
+
+
+def func_min_move(open_close_dict, upper_tuple):
+    cost_list = [i[2] for i in open_close_dict[upper_tuple][0]]
+    min_cost_move = []
+    if len(cost_list) != 0:
+        min_cost_index = cost_list.index(min(cost_list))
+        # min_cost_move = e.g. [1, -3, 7.615773105863909]
+        min_cost_move = open_close_dict[upper_tuple][0][min_cost_index]
+    return min_cost_move
+
 # update the state of board
 
 
@@ -203,6 +258,14 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
         del state[upper_tuple[1:3]]
+        return state
+
+    else:
+        symbol = state[tuple(open_close_dict[upper_tuple][1][-2])]
+        state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
+        print('Turn ', turn, ':', 'GO', ' from ',
+              upper_tuple[1:3], ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
+        del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
 
     # need to write 'if upper_tuple not in sorted_goal_dict.keys():' here !!!!!
