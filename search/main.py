@@ -125,7 +125,7 @@ def main():
         # loop through all upper tokens again and print next move for all upper tokens
         # why use 2 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
         # maybe can find a way to put into one loop. but i will go with this method first
-        #del sorted_goal_dict[('P', 2, -3)]
+        # del sorted_goal_dict[('P', 2, -3)]
         for upper_tuple in all_uppers_list:
             # upper token already reached all goals
             if upper_tuple not in sorted_goal_dict.keys():
@@ -170,71 +170,91 @@ def func_update_close(upper_tuple, open_close_dict, state):
 
     min_cost_move = func_min_move(open_close_dict, upper_tuple)
 
-    min_move_other_upper = []
+    # delete this min_cost_move in other upper tokens
     for upper_tuple_i in list(open_close_dict.keys()):
         if upper_tuple_i != upper_tuple:
-            min_move_other_upper.append(
-                func_min_move(open_close_dict, upper_tuple_i))
+            # print('min_cost_moveeeeeeeeeee', min_cost_move)
+            # print('open_close_dict[upper_tuple_i][0]',open_close_dict[upper_tuple_i][0])
+            # haven't removed effectively
+            if (min_cost_move in open_close_dict[upper_tuple_i][0]) or (min_cost_move[0:2] in open_close_dict[upper_tuple_i][1]):
+                # print('yes innnnnn')
+                if (min_cost_move in open_close_dict[upper_tuple_i][0]):
+                    open_close_dict[upper_tuple_i][0].remove(min_cost_move)
+                else:
+                    open_close_dict[upper_tuple][0].remove(min_cost_move)
+                    min_cost_move = func_min_move(
+                        open_close_dict, upper_tuple)
+                # print('yes removed', min_cost_move)
+    open_close_dict[upper_tuple][1].append(min_cost_move[0:2])
+    open_close_dict[upper_tuple][0] = []
+    # print('current open_close_dict', open_close_dict)
+    return open_close_dict
+    # min_move_other_upper = []
+    # for upper_tuple_i in list(open_close_dict.keys()):
+    #     if upper_tuple_i != upper_tuple:
+    #         min_move_other_upper.append(
+    #             func_min_move(open_close_dict, upper_tuple_i))
 
-    same_min_move = 0
-    for other_move in min_move_other_upper:
-        if other_move == min_cost_move:
-            same_min_move += 1
+    # same_min_move = 0
+    # for other_move in min_move_other_upper:
+    #     if other_move == min_cost_move:
+    #         same_min_move += 1
 
-    if same_min_move == 2:
-        print('ERROR--2 SAME MIN_MOVE--NO ALGO WROTE FOR THIS CASE--NEED TO WRITE ONE ALGO')
-        open_close_dict[upper_tuple][0].remove(min_cost_move)
-        min_move = func_min_move(open_close_dict, upper_tuple)
-        if min_move[0:2] in open_close_dict[upper_tuple][1]:
-            open_close_dict[upper_tuple][0].remove(min_move)
-            min_move = func_min_move(open_close_dict, upper_tuple)
-            # del that element
-            # cal again min_move
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
-        else:
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
-        # sys.exit()
-    if same_min_move == 1:
-        if len(open_close_dict[upper_tuple][0]) > 1:
-            open_close_dict[upper_tuple][0].remove(min_cost_move)
-            min_move = func_min_move(open_close_dict, upper_tuple)
-        else:
-            # if other token len > 1
-            # del min move inside other token
-            # else
-            # current token
-        if min_move[0:2] in open_close_dict[upper_tuple][1]:
-            open_close_dict[upper_tuple][0].remove(min_move)
-            min_move = func_min_move(open_close_dict, upper_tuple)
-            # del that element
-            # cal again min_move
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
-        else:
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
-    else:
-        min_move = func_min_move(open_close_dict, upper_tuple)
-        if min_move[0:2] in open_close_dict[upper_tuple][1]:
-            open_close_dict[upper_tuple][0].remove(min_move)
-            min_move = func_min_move(open_close_dict, upper_tuple)
-            # del that element
-            # cal again min_move
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
-        else:
-            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-            open_close_dict[upper_tuple][0] = []
-            return open_close_dict
+    # if same_min_move == 2:
+    #     print('ERROR--2 SAME MIN_MOVE--NO ALGO WROTE FOR THIS CASE--NEED TO WRITE ONE ALGO')
+    #     open_close_dict[upper_tuple][0].remove(min_cost_move)
+    #     min_move = func_min_move(open_close_dict, upper_tuple)
+    #     if min_move[0:2] in open_close_dict[upper_tuple][1]:
+    #         open_close_dict[upper_tuple][0].remove(min_move)
+    #         min_move = func_min_move(open_close_dict, upper_tuple)
+    #         # del that element
+    #         # cal again min_move
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
+    #     else:
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
+    #     # sys.exit()
+    # if same_min_move == 1:
+    #     if len(open_close_dict[upper_tuple][0]) > 1:
+    #         open_close_dict[upper_tuple][0].remove(min_cost_move)
+    #         min_move = func_min_move(open_close_dict, upper_tuple)
+    #     else:
+    #         # if other token len > 1
+    #         # del min move inside other token
+    #         # else
+    #         # current token
+    #     if min_move[0:2] in open_close_dict[upper_tuple][1]:
+    #         open_close_dict[upper_tuple][0].remove(min_move)
+    #         min_move = func_min_move(open_close_dict, upper_tuple)
+    #         # del that element
+    #         # cal again min_move
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
+    #     else:
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
+    # else:
+    #     min_move = func_min_move(open_close_dict, upper_tuple)
+    #     if min_move[0:2] in open_close_dict[upper_tuple][1]:
+    #         open_close_dict[upper_tuple][0].remove(min_move)
+    #         min_move = func_min_move(open_close_dict, upper_tuple)
+    #         # del that element
+    #         # cal again min_move
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
+    #     else:
+    #         open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+    #         open_close_dict[upper_tuple][0] = []
+    #         return open_close_dict
 
 
+# return [x, y, cost]
 def func_min_move(open_close_dict, upper_tuple):
     cost_list = [i[2] for i in open_close_dict[upper_tuple][0]]
     min_cost_move = []
@@ -242,6 +262,11 @@ def func_min_move(open_close_dict, upper_tuple):
         min_cost_index = cost_list.index(min(cost_list))
         # min_cost_move = e.g. [1, -3, 7.615773105863909]
         min_cost_move = open_close_dict[upper_tuple][0][min_cost_index]
+    # prevent infinite loop
+    if min_cost_move[0:2] in open_close_dict[upper_tuple][1]:
+        if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2:
+            open_close_dict[upper_tuple][0].remove(min_cost_move)
+            min_cost_move = func_min_move(open_close_dict, upper_tuple)
     return min_cost_move
 
 # update the state of board
@@ -281,13 +306,13 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
                 # find max cost for random move so that it won't affect other upper tokens'movement
                 if max_cost < cost:
                     max_cost = cost
-                    #print('max cost', max_cost)
-                    #final_random_move = [x,y,cost]
+                    # print('max cost', max_cost)
+                    # final_random_move = [x,y,cost]
                     final_random_move = possible_with_cost[possible_move_all_tokens.index(
                         next_move)] + [upper_tuple[0]]
 
         state[tuple(final_random_move[0:2])] = final_random_move[-1]
-        print('random')
+        # print('random')
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
         del state[upper_tuple[1:3]]
@@ -295,8 +320,9 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
 
     else:
         symbol = state[tuple(open_close_dict[upper_tuple][1][-2])]
+        # print('symbol is', symbol)
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
-        print('not random')
+        # print('not random')
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
@@ -306,9 +332,9 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
     open_close_dict = {}
     for u in upper:
-        #target = sorted_goal_dictionary[u][0]
-        #ol = func_open_list(state, list(u), target)
-        #cl = close_list[u]
+        # target = sorted_goal_dictionary[u][0]
+        # ol = func_open_list(state, list(u), target)
+        # cl = close_list[u]
         ol = []
         cl = []
         cl.append(list(u[1:3]))
@@ -330,7 +356,7 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
 
     # slide for all possible surrounding hexes
     for surround_item in layer1:
-        #surround_item is [1,2]
+        # surround_item is [1,2]
         ol = if_ol_append(state, surround_item, upper_current_pos, ol)
 
     # swing
@@ -352,7 +378,7 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
         return ol
     for movable_hex in ol:
         movable_hex = list(movable_hex)
-        #print('movable_hex', movable_hex, 'target', target)
+        # print('movable_hex', movable_hex, 'target', target)
         cost = func_upper_lower_distance(movable_hex, target)
         movable_hex.append(cost)
         ol_with_cost.append(movable_hex)
