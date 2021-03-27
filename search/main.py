@@ -185,22 +185,54 @@ def func_update_close(upper_tuple, open_close_dict, state):
         print('ERROR--2 SAME MIN_MOVE--NO ALGO WROTE FOR THIS CASE--NEED TO WRITE ONE ALGO')
         open_close_dict[upper_tuple][0].remove(min_cost_move)
         min_move = func_min_move(open_close_dict, upper_tuple)
-        open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-        open_close_dict[upper_tuple][0] = []
-        return open_close_dict
+        if min_move[0:2] in open_close_dict[upper_tuple][1]:
+            open_close_dict[upper_tuple][0].remove(min_move)
+            min_move = func_min_move(open_close_dict, upper_tuple)
+            # del that element
+            # cal again min_move
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
+        else:
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
         # sys.exit()
     if same_min_move == 1:
-        open_close_dict[upper_tuple][0].remove(min_cost_move)
-        min_move = func_min_move(open_close_dict, upper_tuple)
-        open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
-        open_close_dict[upper_tuple][0] = []
-        return open_close_dict
+        if len(open_close_dict[upper_tuple][0]) > 1:
+            open_close_dict[upper_tuple][0].remove(min_cost_move)
+            min_move = func_min_move(open_close_dict, upper_tuple)
+        else:
+            # if other token len > 1
+            # del min move inside other token
+            # else
+            # current token
+        if min_move[0:2] in open_close_dict[upper_tuple][1]:
+            open_close_dict[upper_tuple][0].remove(min_move)
+            min_move = func_min_move(open_close_dict, upper_tuple)
+            # del that element
+            # cal again min_move
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
+        else:
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
     else:
-        # add the movement into closed list
-        open_close_dict[upper_tuple][1].append(list(min_cost_move[0:2]))
-        # clear open list
-        open_close_dict[upper_tuple][0] = []
-        return open_close_dict
+        min_move = func_min_move(open_close_dict, upper_tuple)
+        if min_move[0:2] in open_close_dict[upper_tuple][1]:
+            open_close_dict[upper_tuple][0].remove(min_move)
+            min_move = func_min_move(open_close_dict, upper_tuple)
+            # del that element
+            # cal again min_move
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
+        else:
+            open_close_dict[upper_tuple][1].append(list(min_move[0:2]))
+            open_close_dict[upper_tuple][0] = []
+            return open_close_dict
 
 
 def func_min_move(open_close_dict, upper_tuple):
@@ -255,6 +287,7 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
                         next_move)] + [upper_tuple[0]]
 
         state[tuple(final_random_move[0:2])] = final_random_move[-1]
+        print('random')
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
         del state[upper_tuple[1:3]]
@@ -263,14 +296,11 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
     else:
         symbol = state[tuple(open_close_dict[upper_tuple][1][-2])]
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
+        print('not random')
         print('Turn ', turn, ':', 'GO', ' from ',
               upper_tuple[1:3], ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
-
-    # need to write 'if upper_tuple not in sorted_goal_dict.keys():' here !!!!!
-    # ...
-    # ...未完待续
 
 
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
@@ -339,7 +369,6 @@ def if_ol_append(state, item, token, ol):  # check if the item should be added t
             # append if not block or undefeatable lower token
             if not ((state[tuple(item)] == 'Block') | (if_defeat(token, item) == 0)):
                 ol.append(item)
-        # 这里的else是 如果 item不在state里吗？但如果不在， 那为什么存在？
         else:
             ol.append(item)
     else:
