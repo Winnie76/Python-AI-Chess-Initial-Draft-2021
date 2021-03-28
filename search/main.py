@@ -113,10 +113,11 @@ def main():
     # while (bool(sorted_goal_dict) == True) and (turn == 0):
     while bool(sorted_goal_dict) == True:
         turn += 1
-        # update open list (next possible move) for all upper token
+
         for upper_tuple in all_uppers_list:
             if upper_tuple in sorted_goal_dict.keys():
-                # update open list
+                # update open list (next possible move) for all upper token
+                # argument (current state, current upper token position, goal position, list_no_cost=0 )
                 open_close_dict[upper_tuple][0] = func_open_list(
                     state, open_close_dict[upper_tuple][1][-1], sorted_goal_dict[upper_tuple][0][0:3], 0)
                 # print(open_close_dict)
@@ -129,19 +130,17 @@ def main():
         for upper_tuple in all_uppers_list:
             # upper token already reached all goals
             if upper_tuple not in sorted_goal_dict.keys():
-                # NEED func_update_state HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                # func_update_state updates the state
-                # if reached goal already, then it will make a best random movement for upper token , update state and print the movement
-                # if not reached goal, then based on open_close_dict movement, it will update the state according to that and print the movement
-                # so the function reads which upper token it is from argument, read the current state, read the open_close_dict to know which movement to update and then update the state
+
                 state = func_update_state(turn,
                                           upper_tuple, state, open_close_dict, sorted_goal_dict)
 
             # upper token still have goal to reach
             else:
+
                 open_close_dict = func_update_close(
                     upper_tuple, open_close_dict, state)
                 # based on open_close_dict movement, it will update the state according to that and print the movement
+
                 state = func_update_state(
                     turn, upper_tuple, state, open_close_dict, sorted_goal_dict)
 
@@ -156,11 +155,16 @@ def main():
 
 def func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict):
     if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][0][1:3]:
+        print('open_close_dict[upper_tuple][1][-1]:',
+              open_close_dict[upper_tuple][1][-1])
+        print('sorted_goal_dict[upper_tuple][0][1:3]',
+              sorted_goal_dict[upper_tuple][0][1:3])
         if len(sorted_goal_dict[upper_tuple]) == 1:
             del sorted_goal_dict[upper_tuple]
         else:
             sorted_goal_dict[upper_tuple] = sorted_goal_dict[upper_tuple][1:]
-        del open_close_dict[upper_tuple]
+        open_close_dict[upper_tuple][0] = []
+        open_close_dict[upper_tuple][1] = []
 
 
 # func_update_close only updates the close list (which is the action/movement of that upper token) in open_close_dict
@@ -176,7 +180,7 @@ def func_update_close(upper_tuple, open_close_dict, state):
             # print('min_cost_moveeeeeeeeeee', min_cost_move)
             # print('open_close_dict[upper_tuple_i][0]',open_close_dict[upper_tuple_i][0])
             # haven't removed effectively
-            if (min_cost_move in open_close_dict[upper_tuple_i][0]) or (min_cost_move[0:2] in open_close_dict[upper_tuple_i][1]):
+            if min_cost_move in open_close_dict[upper_tuple_i][0]:
                 # print('yes innnnnn')
                 if (min_cost_move in open_close_dict[upper_tuple_i][0]):
                     open_close_dict[upper_tuple_i][0].remove(min_cost_move)
@@ -185,6 +189,8 @@ def func_update_close(upper_tuple, open_close_dict, state):
                     min_cost_move = func_min_move(
                         open_close_dict, upper_tuple)
                 # print('yes removed', min_cost_move)
+
+    # check if goal is around
     open_close_dict[upper_tuple][1].append(min_cost_move[0:2])
     open_close_dict[upper_tuple][0] = []
     # print('current open_close_dict', open_close_dict)
@@ -269,9 +275,11 @@ def func_min_move(open_close_dict, upper_tuple):
             min_cost_move = func_min_move(open_close_dict, upper_tuple)
     return min_cost_move
 
-# update the state of board
 
-
+# func_update_state updates the state of the board
+# if reached goal already, then it will make a best random movement for upper token , update state and print the movement
+# if not reached goal, then based on open_close_dict movement, it will update the state according to that and print the movement
+# so the function reads which upper token it is from argument, read the current state, read the open_close_dict to know which movement to update and then update the state
 def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dict):
 
     # if upper_tuple already reached the goal
@@ -356,7 +364,7 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
 
     # slide for all possible surrounding hexes
     for surround_item in layer1:
-        # surround_item is [1,2]
+        # surround_item is [1,2]   upper_current_pos is [x, y]
         ol = if_ol_append(state, surround_item, upper_current_pos, ol)
 
     # swing
@@ -385,15 +393,20 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
 
     return ol_with_cost
 
+# surround_item is [1,2]   upper_current_pos is [x, y]
+# ol = if_ol_append(state, surround_item, upper_current_pos, ol)
+
 
 def if_ol_append(state, item, token, ol):  # check if the item should be added to open list
-    new_ol = []
-    for element in ol:
-        new_ol.append(element[0:2])
+
+    new_ol = [i[0:2] for i in ol]
+
     if item not in new_ol:  # to avoid double record
         if tuple(item) in state:
-            # append if not block or undefeatable lower token
-            if not ((state[tuple(item)] == 'Block') | (if_defeat(token, item) == 0)):
+            ut = [state[tuple(token)]]+[token]
+            lt = [state[tuple(item)]]+[item]
+            # append if not block or undefeatable lower token (upper, lower) uppper couldn't defeat lower --> 0
+            if not ((state[tuple(item)] == 'Block') | (if_defeat(ut, lt) == 0)):
                 ol.append(item)
         else:
             ol.append(item)
@@ -450,6 +463,8 @@ def func_upper_lower_distance(ut, lt):
         return distance
     distance = math.sqrt((ut[2]-lt[2])**2 + (ut[1]-lt[1])**2)
     return distance
+
+# ut lt are tuples ('R', x, y) or ['R', x, y]
 
 
 def if_defeat(ut, lt):
