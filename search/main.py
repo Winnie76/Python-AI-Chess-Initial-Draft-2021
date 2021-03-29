@@ -114,38 +114,43 @@ def main():
     while bool(sorted_goal_dict) == True:
         turn += 1
 
+        # update open list (next possible move) for all upper token
         for upper_tuple in all_uppers_list:
             if upper_tuple in sorted_goal_dict.keys():
-                # update open list (next possible move) for all upper token
                 # argument (current state, current upper token position, goal position, list_no_cost=0 )
                 open_close_dict[upper_tuple][0] = func_open_list(
                     state, open_close_dict[upper_tuple][1][-1], sorted_goal_dict[upper_tuple][0][0:3], 0)
                 # print(open_close_dict)
                 # --> {('P', 2, -3): [[[1, -3, 7.615773105863909], [2, -4, 8.94427190999916], [3, -4, 9.433981132056603], [2, -2, 7.211102550927978], [1, -2, 6.708203932499369], [4, -4, 10.0], [4, -3, 9.219544457292887], [3, -2, 7.810249675906654]], [[2, -3]]], ('R', 3, -3): [[[3, -4, 6.082762530298219], [4, -4, 6.324555320336759], [4, -3, 5.385164807134504], [3, -2, 4.123105625617661], [2, -2, 4.0], [1, -2, 4.123105625617661], [1, -3, 5.0990195135927845], [2, -4, 6.0]], [[3, -3]]], ('S', 4, -2): [[[3, -2, 5.830951894845301], [4, -3, 7.211102550927978], [5, -3, 7.810249675906654], [5, -2, 7.0710678118654755], [4, -1, 5.656854249492381], [3, -1, 5.0]], [[4, -2]]]}
 
-        # loop through all upper tokens again and print next move for all upper tokens
-        # why use 2 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
+        # sort upper token based on len of possible moves
+        sorted_open_by_len = {}
+        for upper in all_uppers_list:
+            sorted_open_by_len[upper] = len(open_close_dict[upper][0])
+
+        sorted_open_by_len = {k: v for k, v in sorted(
+            sorted_open_by_len.items(), key=lambda item: item[1])}
+        print('yes sorted', sorted_open_by_len)
+
+        # why use 3 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
         # maybe can find a way to put into one loop. but i will go with this method first
-        # del sorted_goal_dict[('P', 2, -3)]
-        for upper_tuple in all_uppers_list:
+        # update close list
+        for upper_tuple in sorted_open_by_len.keys():
             # upper token already reached all goals
-            if upper_tuple not in sorted_goal_dict.keys():
-
-                state = func_update_state(turn,
-                                          upper_tuple, state, open_close_dict, sorted_goal_dict)
-
-            # upper token still have goal to reach
-            else:
+            if upper_tuple in sorted_goal_dict.keys():
 
                 open_close_dict = func_update_close(
                     upper_tuple, open_close_dict, state)
                 # based on open_close_dict movement, it will update the state according to that and print the movement
 
-                state = func_update_state(
-                    turn, upper_tuple, state, open_close_dict, sorted_goal_dict)
+        # update state and print next move for all upper tokens
+        for upper_tuple in all_uppers_list:
 
-                func_check_goal_reached(
-                    upper_tuple, sorted_goal_dict, open_close_dict)
+            state = func_update_state(
+                turn, upper_tuple, state, open_close_dict, sorted_goal_dict)
+
+            func_check_goal_reached(
+                upper_tuple, sorted_goal_dict, open_close_dict)
 
 #--------------------------------------------functions needed-------------------------------------------------------#
 # check if upper token reached goal or not
@@ -155,10 +160,8 @@ def main():
 
 def func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict):
     if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][0][1:3]:
-        print('open_close_dict[upper_tuple][1][-1]:',
-              open_close_dict[upper_tuple][1][-1])
-        print('sorted_goal_dict[upper_tuple][0][1:3]',
-              sorted_goal_dict[upper_tuple][0][1:3])
+        #print('open_close_dict[upper_tuple][1][-1]:', open_close_dict[upper_tuple][1][-1])
+        #print('sorted_goal_dict[upper_tuple][0][1:3]', sorted_goal_dict[upper_tuple][0][1:3])
         if len(sorted_goal_dict[upper_tuple]) == 1:
             del sorted_goal_dict[upper_tuple]
         else:
@@ -181,14 +184,14 @@ def func_update_close(upper_tuple, open_close_dict, state):
             # print('open_close_dict[upper_tuple_i][0]',open_close_dict[upper_tuple_i][0])
             # haven't removed effectively
             if min_cost_move in open_close_dict[upper_tuple_i][0]:
-                # print('yes innnnnn')
-                if (min_cost_move in open_close_dict[upper_tuple_i][0]):
-                    open_close_dict[upper_tuple_i][0].remove(min_cost_move)
-                else:
-                    open_close_dict[upper_tuple][0].remove(min_cost_move)
-                    min_cost_move = func_min_move(
-                        open_close_dict, upper_tuple)
-                # print('yes removed', min_cost_move)
+                # # print('yes innnnnn')
+                # if (min_cost_move in open_close_dict[upper_tuple_i][0]):
+                open_close_dict[upper_tuple_i][0].remove(min_cost_move)
+                # else:
+                #     open_close_dict[upper_tuple][0].remove(min_cost_move)
+                #     min_cost_move = func_min_move(
+                #         open_close_dict, upper_tuple)
+                # # print('yes removed', min_cost_move)
 
     # check if goal is around
     open_close_dict[upper_tuple][1].append(min_cost_move[0:2])
