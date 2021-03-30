@@ -35,15 +35,24 @@ def main():
         upper = data['upper']
         lower = data['lower']
         block = data['block']
+        board_limit = board_range()
+        for value in board_limit:
+            data['block'].append(value)
         state = {}
         for key in data:
             for item in data[key]:
                 loc = {tuple(item[1:3]): item[0]}
                 state.update(loc)
         # print('state is', state)
-        # {(2, -3): 'P', (3, -3): 'R', (4, -2): 'S', (-4, 4): 'r', (-3, -1): 'p', (-3, 1): 'p', (-3, 3): 's', (-2, 4): 'r', (0, 3): 'p', (2, 2): 's', (-1, 1): 'Block', (0, 0): 'Block', (2, -1): 'Block', (2, 0): 'Block', (3, 0): 'Block'}
+        # {(2, -3): 'P', (3, -3): 'R', (4, -2): 'S', (-4, 4): 'r', (-3, -1): 'p', (-3, 1): 'p', (-3, 3): 's', (-2, 4): 'r',
+        # (0, 3): 'p', (2, 2): 's', (-1, 1): 'Block', (0, 0): 'Block', (2, -1): 'Block', (2, 0): 'Block', (3, 0): 'Block',
+        # (0, -5): 'Block', (1, -5): 'Block', (2, -5): 'Block', (3, -5): 'Block', (4, -5): 'Block', (5, -5): 'Block',
+        # (5, -4): 'Block', (5, -3): 'Block', (5, -2): 'Block', (5, -1): 'Block', (5, 0): 'Block', (4, 1): 'Block',
+        # (3, 2): 'Block', (2, 3): 'Block', (1, 4): 'Block', (0, 5): 'Block', (-1, 5): 'Block', (-2, 5): 'Block',
+        # (-3, 5): 'Block', (-4, 5): 'Block', (-5, 5): 'Block', (-5, 4): 'Block', (-5, 3): 'Block', (-5, 2): 'Block',
+        # (-5, 1): 'Block', (-5, 0): 'Block', (-4, -1): 'Block', (-3, -2): 'Block', (-2, -3): 'Block', (-1, -4): 'Block'}
 
-        # print_board(state)
+        # print_board(state) -- still this board with no blocks around it
         #              .-'-._.-'-._.-'-._.-'-._.-'-.
         #             |     |     |  S  |     |     |
         #           .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
@@ -130,7 +139,7 @@ def main():
 
         sorted_open_by_len = {k: v for k, v in sorted(
             sorted_open_by_len.items(), key=lambda item: item[1])}
-        print('yes sorted', sorted_open_by_len)
+        # print('yes sorted', sorted_open_by_len)
 
         # why use 3 loops seperately : if one upper token move directly, it's may not be the best move for all upper tokens cuz another upper token needs to change route??
         # maybe can find a way to put into one loop. but i will go with this method first
@@ -159,15 +168,61 @@ def main():
 
 
 def func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict):
-    if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][0][1:3]:
-        #print('open_close_dict[upper_tuple][1][-1]:', open_close_dict[upper_tuple][1][-1])
-        #print('sorted_goal_dict[upper_tuple][0][1:3]', sorted_goal_dict[upper_tuple][0][1:3])
-        if len(sorted_goal_dict[upper_tuple]) == 1:
-            del sorted_goal_dict[upper_tuple]
-        else:
-            sorted_goal_dict[upper_tuple] = sorted_goal_dict[upper_tuple][1:]
-        open_close_dict[upper_tuple][0] = []
-        open_close_dict[upper_tuple][1] = []
+    if upper_tuple in sorted_goal_dict.keys():
+        # if last element in close list is the same as sorted goal dict first goal
+        if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][0][1:3]:
+            #print('open_close_dict[upper_tuple][1][-1]:', open_close_dict[upper_tuple][1][-1])
+            #print('sorted_goal_dict[upper_tuple][0][1:3]', sorted_goal_dict[upper_tuple][0][1:3])
+            # if the length of goals of sorted goal dict is 1 --> remove that key value pair from sorted_goal_dict
+            if len(sorted_goal_dict[upper_tuple]) == 1:
+                del sorted_goal_dict[upper_tuple]
+            # if more than 1 goal in sorted_goal_dict
+            else:
+                sorted_goal_dict[upper_tuple] = sorted_goal_dict[upper_tuple][1:]
+            open_close_dict[upper_tuple][0] = []
+
+    return open_close_dict
+
+
+def board_range():
+    v1 = [0, -5]
+    v2 = [5, -5]
+    v3 = [5, 0]
+    v4 = [0, 5]
+    v5 = [-5, 5]
+    v6 = [-5, 0]
+    range_limit = []
+    r = v1[0]
+    q = v1[1]
+    for i in range(6):
+        r_q = ['Block', r + i, q]
+        range_limit.append(r_q)
+    r = v2[0]
+    q = v2[1]
+    for i in range(1, 6, 1):
+        r_q = ['Block', r, q + i]
+        range_limit.append(r_q)
+    r = v3[0]
+    q = v3[1]
+    for i in range(1, 6, 1):
+        r_q = ['Block', r - i, q + i]
+        range_limit.append(r_q)
+    r = v4[0]
+    q = v4[1]
+    for i in range(1, 6, 1):
+        r_q = ['Block', r - i, q]
+        range_limit.append(r_q)
+    r = v5[0]
+    q = v5[1]
+    for i in range(1, 6, 1):
+        r_q = ['Block', r, q - i]
+        range_limit.append(r_q)
+    r = v6[0]
+    q = v6[1]
+    for i in range(1, 6, 1):
+        r_q = ['Block', r + i, q - i]
+        range_limit.append(r_q)
+    return range_limit
 
 
 # func_update_close only updates the close list (which is the action/movement of that upper token) in open_close_dict
@@ -183,10 +238,11 @@ def func_update_close(upper_tuple, open_close_dict, state):
             # print('min_cost_moveeeeeeeeeee', min_cost_move)
             # print('open_close_dict[upper_tuple_i][0]',open_close_dict[upper_tuple_i][0])
             # haven't removed effectively
-            if min_cost_move in open_close_dict[upper_tuple_i][0]:
-                # # print('yes innnnnn')
-                # if (min_cost_move in open_close_dict[upper_tuple_i][0]):
-                open_close_dict[upper_tuple_i][0].remove(min_cost_move)
+            for item in open_close_dict[upper_tuple_i][0]:
+                if item[0:2] == min_cost_move[0:2]:
+                    #print('yes item[0:2] == min_cost_move[0:2]',item[0:2], min_cost_move[0:2])
+                    open_close_dict[upper_tuple_i][0].remove(item)
+                    #print('yes removed?????', open_close_dict[upper_tuple_i][0])
                 # else:
                 #     open_close_dict[upper_tuple][0].remove(min_cost_move)
                 #     min_cost_move = func_min_move(
@@ -291,53 +347,83 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         # check surroundings to make a best decision
         # print(possible_random_move) --> [[1, -3], [2, -4], [3, -4], [2, -2], [1, -2], [4, -4], [4, -3], [3, -2]]
         possible_random_move = func_open_list(
-            state, list(upper_tuple[1:3]), ['r', 1, 1], 1)
+            state, list(open_close_dict[upper_tuple][1][-1]), ['r', 1, 1], 1)
 
+        #print('current open_close_dict', open_close_dict)
+        #print('possible random move for this upper token', possible_random_move)
         # all possible moves for all upper tokens at that turn in open lists [[x,y], [x2,y2]......]
-        possible_move_all_tokens = []
+        #possible_move_all_tokens = []
         # all possible moves for all upper token at that turn with cost [[x,y,cost],[x2,y2,cost].....]
-        possible_with_cost = []
-        for key in open_close_dict:
-            possible_with_cost += open_close_dict[key][0]
-        possible_move_all_tokens = [i[0:2] for i in possible_with_cost]
-        # print(possible_move_all_tokens)
+        # possible_with_cost = []
+        # for key in open_close_dict.keys():
+        #     possible_with_cost.append(open_close_dict[key][0])
+        # print('possible with cost', possible_with_cost)
+        # possible_move_all_tokens = [i[0:2] for i in possible_with_cost]
+        # print('possible move for alll tokens', possible_move_all_tokens)
+        # # print(possible_move_all_tokens)
+        for upper in open_close_dict.keys():
+            if open_close_dict[upper][1][-1] in possible_random_move:
+                possible_random_move.remove(open_close_dict[upper][1][-1])
 
-        max_cost = 0
-        final_random_move = []
-        for next_move in possible_random_move:
-            if next_move not in possible_move_all_tokens:
-                state[tuple(next_move)] = upper_tuple[0]
-                print('Turn ', turn, ':', 'GO', ' from ',
-                      upper_tuple[1:3], ' to ', tuple(next_move))
-                del state[upper_tuple[1:3]]
-                return state
-            else:
-                cost = possible_with_cost[possible_move_all_tokens.index(
-                    next_move)][2]
-                # find max cost for random move so that it won't affect other upper tokens'movement
-                if max_cost < cost:
-                    max_cost = cost
-                    # print('max cost', max_cost)
-                    # final_random_move = [x,y,cost]
-                    final_random_move = possible_with_cost[possible_move_all_tokens.index(
-                        next_move)] + [upper_tuple[0]]
-
-        state[tuple(final_random_move[0:2])] = final_random_move[-1]
-        # print('random')
-        print('Turn ', turn, ':', 'GO', ' from ',
-              upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
-        del state[upper_tuple[1:3]]
+        state[tuple(possible_random_move[0])] = upper_tuple[0]
+        print('Turn ', turn, ':', slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]), ' from ',
+              tuple(open_close_dict[upper_tuple][1][-1]), ' to ', tuple(possible_random_move[0]))
+        open_close_dict[upper_tuple][1].append(possible_random_move[0])
+        # delete the previous position upper token is in the state
+        del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
+
+        # max_cost = 0
+        # final_random_move = []
+        # # possible random move is for current upper token
+        # for next_move in possible_random_move:
+        #     if next_move not in possible_move_all_tokens:
+        #         state[tuple(next_move)] = upper_tuple[0]
+        #         print('Turn ', turn, ':', 'GO', ' from ',
+        #               upper_tuple[1:3], ' to ', tuple(next_move))
+        #         open_close_dict[upper_tuple][1].append(next_move)
+        #         del state[tuple(open_close_dict[upper_tuple][1][-2])]
+        #         return state
+        #     else:
+        #         # find next_move in possible move all token and choose the next_move with max cost
+        #         cost = possible_with_cost[possible_move_all_tokens.index(
+        #             next_move)][2]
+        #         # find max cost for random move so that it won't affect other upper tokens'movement
+        #         if max_cost < cost:
+        #             max_cost = cost
+        #             # print('max cost', max_cost)
+        #             # final_random_move = [x,y,cost, 'R']
+        #             final_random_move = possible_with_cost[possible_move_all_tokens.index(
+        #                 next_move)] + [upper_tuple[0]]
+        #
+        # state[tuple(final_random_move[0:2])] = final_random_move[-1]
+        # # print('random')
+        # print('Turn ', turn, ':', 'GO', ' from ',
+        #       upper_tuple[1:3], ' to ', tuple(final_random_move[0:2]))
+        # open_close_dict[upper_tuple][1].append(final_random_move[0:2])
+        # # delete the previous position upper token is in the state
+        # del state[tuple(open_close_dict[upper_tuple][1][-2])]
+        # return state
 
     else:
         symbol = state[tuple(open_close_dict[upper_tuple][1][-2])]
         # print('symbol is', symbol)
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
         # print('not random')
-        print('Turn ', turn, ':', 'GO', ' from ',
-              upper_tuple[1:3], ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
+        print('Turn ', turn, ':', slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]), ' from ',
+              tuple(open_close_dict[upper_tuple][1][-2]), ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
+
+# from_list [x, y]   to_list[m, n]
+
+
+def slide_or_swing(from_list, to_list):
+    if to_list in six_hex_surrond(from_list):
+        text = 'SLIDE'
+    else:
+        text = 'SWING'
+    return text
 
 
 def open_close_dict_build(state, upper, sorted_goal_dictionary):
