@@ -21,7 +21,7 @@ def main():
 
         # get the second argument user entered when calling this
         # sys.argv[1]
-        with open('test.json') as file:
+        with open(sys.argv[1]) as file:
             # so now u have a JSON format data
             data = json.load(file)
 
@@ -98,8 +98,23 @@ def main():
                 goal_dictionary[tuple(pair[0])].append(pair[1]+[distance])
     # print(goal_dictionary)
     # {('P', 2, -3): [['r', -4, 4, 9.219544457292887], ['r', -2, 4, 8.06225774829855]], ('R', 3, -3): [['s', -3, 3, 8.48528137423857], ['s', 2, 2, 5.0990195135927845]], ('S', 4, -2): [['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909], ['p', 0, 3, 6.4031242374328485]]}
+
+    # eliminate repeated goals for different upper tokens
+    for upper in goal_dictionary.keys():
+        for goal in goal_dictionary[upper]:
+            for other_upper in goal_dictionary.keys():
+                if upper != other_upper:
+                    list_other = [i[0:3] for i in goal_dictionary[other_upper]]
+
+                    if goal[0:3] in list_other:
+                        index_other = list_other.index(goal[0:3])
+                        remove_goal = goal_dictionary[other_upper][index_other]
+                        goal_dictionary[other_upper].remove(remove_goal)
+                        break
+    print('heerrrrrrrr', goal_dictionary)
+
     sorted_goal_dict = func_sort_distance(goal_dictionary)
-    # print(sorted_goal_dict)
+    print('hererrrrrrrrr', sorted_goal_dict)
     # {('P', 2, -3): [['r', -2, 4, 8.06225774829855], ['r', -4, 4, 9.219544457292887]], ('R', 3, -3): [['s', 2, 2, 5.0990195135927845], ['s', -3, 3, 8.48528137423857]], ('S', 4, -2): [['p', 0, 3, 6.4031242374328485], ['p', -3, -1, 7.0710678118654755], ['p', -3, 1, 7.615773105863909]]}
 
     # open_close_dict = {(upper token 1): [[open list], [close list]],
@@ -113,11 +128,19 @@ def main():
     # init open_close_dict here
     open_close_dict = open_close_dict_build(
         state, all_uppers_list, sorted_goal_dict)
+    print('build initial open close dict', open_close_dict)
     # print(open_close_dict)
     #  -->  {('P', 2, -3): [[], [[2, -3]]], ('R', 3, -3): [[], [[3, -3]]], ('S', 4, -2): [[], [[4, -2]]]}
     # i want {('P', 2, -3): [[[1,2,totol_cost], [2,3,total_cost]......], [[1,2],[2,3],[3,4],.....[target]]], ('R', 3, -3): [[], []], ('S', 4, -2): [[], []]}
 
-    # del sorted_goal_dict[('P', 2, -3)]
+    # delete all upper in sorted_goal_dict that has no goals
+    new_sorted_goal = {}
+    for upper in sorted_goal_dict.keys():
+        if sorted_goal_dict[upper] != []:
+            new_sorted_goal[upper] = sorted_goal_dict[upper]
+    sorted_goal_dict = new_sorted_goal
+    print('yes sorted goal dict ohhhhh', sorted_goal_dict)
+
     turn = 0
     # while (bool(sorted_goal_dict) == True) and (turn == 0):
     while bool(sorted_goal_dict) == True:
@@ -231,7 +254,7 @@ def board_range():
 def func_update_close(upper_tuple, open_close_dict, state):
 
     min_cost_move = func_min_move(open_close_dict, upper_tuple)
-
+    print('min_cost_move', min_cost_move)
     # delete this min_cost_move in other upper tokens
     for upper_tuple_i in list(open_close_dict.keys()):
         if upper_tuple_i != upper_tuple:
@@ -327,9 +350,10 @@ def func_min_move(open_close_dict, upper_tuple):
         min_cost_index = cost_list.index(min(cost_list))
         # min_cost_move = e.g. [1, -3, 7.615773105863909]
         min_cost_move = open_close_dict[upper_tuple][0][min_cost_index]
-    # prevent infinite loop
+    # prevent infinite loop: if the min_cost_move already existed in the close list, and the current open list has length
+    # more than one, then remove that min_cost_move and find a new min_cost_move
     if min_cost_move[0:2] in open_close_dict[upper_tuple][1]:
-        if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2:
+        if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2 and len(open_close_dict[upper_tuple][0])>1:
             open_close_dict[upper_tuple][0].remove(min_cost_move)
             min_cost_move = func_min_move(open_close_dict, upper_tuple)
     return min_cost_move
@@ -366,8 +390,15 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
                 possible_random_move.remove(open_close_dict[upper][1][-1])
 
         state[tuple(possible_random_move[0])] = upper_tuple[0]
-        print('Turn ', turn, ':', slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]), ' from ',
-              tuple(open_close_dict[upper_tuple][1][-1]), ' to ', tuple(possible_random_move[0]))
+        print('random')
+        if slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]) == 'SWING':
+            print_swing(turn, open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple]
+                        [1][-1][1], possible_random_move[0][0], possible_random_move[0][1])
+        else:
+            print_slide(turn, open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1],
+                        possible_random_move[0][0], possible_random_move[0][1])
+        # print('Turn ', str(turn), ':', slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]), ' from ',
+        #       tuple(open_close_dict[upper_tuple][1][-1]), ' to ', tuple(possible_random_move[0]))
         open_close_dict[upper_tuple][1].append(possible_random_move[0])
         # delete the previous position upper token is in the state
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
@@ -406,12 +437,19 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         # return state
 
     else:
-        symbol = state[tuple(open_close_dict[upper_tuple][1][-2])]
+        symbol = upper_tuple[0]
         # print('symbol is', symbol)
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
-        # print('not random')
-        print('Turn ', turn, ':', slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]), ' from ',
-              tuple(open_close_dict[upper_tuple][1][-2]), ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
+        print('not random')
+        print(open_close_dict)
+        if slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]) == 'SWING':
+            print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
+                        open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
+        else:
+            print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
+                        open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
+        # print('Turn ', str(turn), ':', slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]), ' from ',
+        #       tuple(open_close_dict[upper_tuple][1][-2]), ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
 
@@ -485,6 +523,8 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
 # surround_item is [1,2]   upper_current_pos is [x, y]
 # ol = if_ol_append(state, surround_item, upper_current_pos, ol)
 
+# (state, surround_item, upper_current_pos, ol)
+
 
 def if_ol_append(state, item, token, ol):  # check if the item should be added to open list
 
@@ -525,24 +565,28 @@ def func_sort_distance(goal_dictionary):
     sorted_goal_dict = {}
     while bool(goal_dictionary) == True:
         for key in list(goal_dictionary.keys()):
-            min = goal_dictionary[key][0][3]  # minimum distance
-            min_i = 0
-            for i in range(len(goal_dictionary[key])):
-                if goal_dictionary[key][i][3] < min:
-                    min = goal_dictionary[key][i][3]
-                    min_i = i
-                else:
-                    pass
-            if key not in list(sorted_goal_dict.keys()):
-                target = {key: [goal_dictionary[key][min_i]]}
-                sorted_goal_dict.update(target)
-            else:
-                sorted_goal_dict[key].append(goal_dictionary[key][min_i])
-
-            goal_dictionary[key] = [
-                i for i in goal_dictionary[key] if i[3] != min]
             if goal_dictionary[key] == []:
+                sorted_goal_dict[key] = []
                 del goal_dictionary[key]
+            else:
+                min = goal_dictionary[key][0][3]  # minimum distance
+                min_i = 0
+                for i in range(len(goal_dictionary[key])):
+                    if goal_dictionary[key][i][3] < min:
+                        min = goal_dictionary[key][i][3]
+                        min_i = i
+                    else:
+                        pass
+                if key not in list(sorted_goal_dict.keys()):
+                    target = {key: [goal_dictionary[key][min_i]]}
+                    sorted_goal_dict.update(target)
+                else:
+                    sorted_goal_dict[key].append(goal_dictionary[key][min_i])
+
+                goal_dictionary[key] = [
+                    i for i in goal_dictionary[key] if i[3] != min]
+                if goal_dictionary[key] == []:
+                    del goal_dictionary[key]
     return sorted_goal_dict
 
 
