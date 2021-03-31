@@ -189,3 +189,12 @@
       # Why not start by trying to print this configuration out using the
       # `print_board` helper function? (See the `util.py` source code for
       # usage information).
+
+#此时的state不是最新的，无法通过state找到open list？？？
+                    #知道有冲突的upper token叫 upper
+
+      # 这里需要检查其它upper token -1 是不是和min_cost_move 一样才行！！！！！没有写
+
+
+      # a problem may arise if there is only one possible random move but it is also other token's next move
+      # need to change the next move of that token!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

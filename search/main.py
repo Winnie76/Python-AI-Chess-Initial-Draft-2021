@@ -254,7 +254,7 @@ def func_min_move(open_close_dict, upper_tuple):
     # prevent infinite loop: if the min_cost_move already existed in the close list, and the current open list has length
     # more than one, then remove that min_cost_move and find a new min_cost_move
     if min_cost_move[0:2] in open_close_dict[upper_tuple][1][-10:]:
-        if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2 and len(open_close_dict[upper_tuple][0])>1:
+        if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2 and len(open_close_dict[upper_tuple][0]) > 1:
             open_close_dict[upper_tuple][0].remove(min_cost_move)
             min_cost_move = func_min_move(open_close_dict, upper_tuple)
     return min_cost_move
@@ -265,26 +265,22 @@ def func_min_move(open_close_dict, upper_tuple):
 # if not reached goal, then based on open_close_dict movement, it will update the state according to that and print the movement
 # so the function reads which upper token it is from argument, read the current state, read the open_close_dict to know which movement to update and then update the state
 def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dict):
-
+    # 注意！！！！！！！！！！！！！！！！！！！！！！！random只有写入update close，才逻辑不出错！！！！！下次把这个移动到update close list的地方！！！
     # if upper_tuple already reached the goal
     possible_random_move = []
     if upper_tuple not in sorted_goal_dict.keys():
-        print('random')
         # check surroundings to make a best decision
         # print(possible_random_move) --> [[1, -3], [2, -4], [3, -4], [2, -2], [1, -2], [4, -4], [4, -3], [3, -2]]
         possible_random_move = func_open_list(
             state, list(open_close_dict[upper_tuple][1][-1]), ['r', 1, 1], 1)
-        print(possible_random_move)
-        #a problem may arise if there is only one possible random move but it is also other token's next move
-        #need to change the next move of that token!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if len(possible_random_move)>1:
+
+        if len(possible_random_move) > 1:
             for upper in open_close_dict.keys():
-                if upper!=upper_tuple:
+                if upper != upper_tuple:
                     if open_close_dict[upper][1][-1] in possible_random_move:
-                        possible_random_move.remove(open_close_dict[upper][1][-1])
+                        possible_random_move.remove(
+                            open_close_dict[upper][1][-1])
 
-
-        #print(possible_random_move)
         state[tuple(possible_random_move[0])] = upper_tuple[0]
         if slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]) == 'SWING':
             print_swing(turn, open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple]
@@ -298,15 +294,13 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
 
         if len(possible_random_move) == 1:
             for upper in open_close_dict.keys():
-                if upper!=upper_tuple and open_close_dict[upper][1][-1]==possible_random_move[0]:
-                    print('yessssssssssssssssss herrrrrrrrrrrrrrrrrrrrre')
-                    #此时的state不是最新的，无法通过state找到open list？？？
-                    #知道有冲突的upper token叫 upper
-                    #new_possible_move = [[x,y, cost],[]...]
-                    new_possible_move = func_open_list(state, open_close_dict[upper][1][-2], ['r', 1, 1], 0)
+                if upper != upper_tuple and open_close_dict[upper][1][-1] == possible_random_move[0]:
+
+                    # new_possible_move = [[x,y, cost],[]...]
+                    new_possible_move = func_open_list(
+                        state, open_close_dict[upper][1][-2], ['r', 1, 1], 0)
                     open_close_dict[upper][0] = new_possible_move
                     min_cost_move = func_min_move(open_close_dict, upper)
-                    #这里需要检查其它upper token -1 是不是和min_cost_move 一样才行！！！！！没有写
                     if min_cost_move[0:2] == open_close_dict[upper_tuple][1][-1]:
                         min_cost_move = func_min_move(open_close_dict, upper)
                     open_close_dict[upper][1][-1] = min_cost_move[0:2]
@@ -314,8 +308,6 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
 
     else:
         symbol = upper_tuple[0]
-        print('not random')
-        print('......', state)
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
         if slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]) == 'SWING':
             print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
@@ -323,7 +315,6 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         else:
             print_slide(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
                         open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
-        print('.....', state)
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
 
@@ -458,8 +449,6 @@ def func_sort_distance(goal_dictionary):
                 if goal_dictionary[key] == []:
                     del goal_dictionary[key]
     return sorted_goal_dict
-
-
 
 
 def func_upper_lower_distance(ut, lt):
