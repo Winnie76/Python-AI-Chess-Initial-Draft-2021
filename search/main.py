@@ -45,7 +45,6 @@ def main():
                 state.update(loc)
         # print('state is', state)
 
-
     except IndexError:
         print("usage: python3 -m search path/to/input.json", file=sys.stderr)
         sys.exit(1)
@@ -157,19 +156,26 @@ def main():
 def func_check_goal_reached(upper_tuple, sorted_goal_dict, open_close_dict):
     if upper_tuple in sorted_goal_dict.keys():
         # if last element in close list is the same as sorted goal dict first goal
-        #position is an index list
-        position=[]
+        # position is an index list
+        position = []
         for i in range(len(sorted_goal_dict[upper_tuple])):
             if open_close_dict[upper_tuple][1][-1] == sorted_goal_dict[upper_tuple][i][1:3]:
                 position.append(i)
         # if the length of goals of sorted goal dict is 1 --> remove that key value pair from sorted_goal_dict
-        if (position): #defeat the current goal
+        if (position):  # defeat the current goal
             if len(sorted_goal_dict[upper_tuple]) == 1:
                 del sorted_goal_dict[upper_tuple]
             # if more than 1 goal in sorted_goal_dict
             else:
-                #delete the goal in dict by finding the index
+                # delete the goal in dict by finding the index
                 del sorted_goal_dict[upper_tuple][position[0]]
+                # recalculate distance btw upper and its goal in sorted goal dict    [['r', -2, 4, 8.06225774829855], ['r', -4, 4, 9.219544457292887]]
+                for upper_goal in sorted_goal_dict[upper_tuple]:
+                    #print('distance', open_close_dict[upper_tuple][1][-1],  upper_goal[1:3])
+                    new_distance = func_upper_lower_distance(
+                        open_close_dict[upper_tuple][1][-1], upper_goal[1:3])
+                    upper_goal[3] = new_distance
+                sorted_goal_dict[upper_tuple].sort(key=lambda x: x[3])
     open_close_dict[upper_tuple][0] = []
 
     return open_close_dict
@@ -231,12 +237,10 @@ def func_update_close(upper_tuple, open_close_dict, state):
                 if item[0:2] == min_cost_move[0:2]:
                     open_close_dict[upper_tuple_i][0].remove(item)
 
-
     # check if goal is around
     open_close_dict[upper_tuple][1].append(min_cost_move[0:2])
     open_close_dict[upper_tuple][0] = []
     return open_close_dict
-
 
 
 # this function returns [x, y, cost]
@@ -249,7 +253,7 @@ def func_min_move(open_close_dict, upper_tuple):
         min_cost_move = open_close_dict[upper_tuple][0][min_cost_index]
     # prevent infinite loop: if the min_cost_move already existed in the close list, and the current open list has length
     # more than one, then remove that min_cost_move and find a new min_cost_move
-    if min_cost_move[0:2] in open_close_dict[upper_tuple][1]:
+    if min_cost_move[0:2] in open_close_dict[upper_tuple][1][-10:]:
         if open_close_dict[upper_tuple][1].index(min_cost_move[0:2]) != -2 and len(open_close_dict[upper_tuple][0])>1:
             open_close_dict[upper_tuple][0].remove(min_cost_move)
             min_cost_move = func_min_move(open_close_dict, upper_tuple)
@@ -270,7 +274,6 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         possible_random_move = func_open_list(
             state, list(open_close_dict[upper_tuple][1][-1]), ['r', 1, 1], 1)
 
-
         for upper in open_close_dict.keys():
             if open_close_dict[upper][1][-1] in possible_random_move:
                 possible_random_move.remove(open_close_dict[upper][1][-1])
@@ -286,7 +289,6 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         # delete the previous position upper token is in the state
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
-
 
     else:
         symbol = upper_tuple[0]
@@ -367,6 +369,8 @@ def func_open_list(state, upper_current_pos, target, list_no_cost):
 # ol = if_ol_append(state, surround_item, upper_current_pos, ol)
 
 # (state, surround_item, upper_current_pos, ol)
+
+
 def if_ol_append(state, item, token, ol):  # check if the item should be added to open list
 
     new_ol = [i[0:2] for i in ol]
@@ -431,7 +435,12 @@ def func_sort_distance(goal_dictionary):
     return sorted_goal_dict
 
 
+
+
 def func_upper_lower_distance(ut, lt):
+    if len(ut) == 2 and len(lt) == 2:
+        distance = math.sqrt((ut[1] - lt[1]) ** 2 + (ut[0] - lt[0]) ** 2)
+        return distance
     if len(ut) == 2:
         distance = math.sqrt((ut[1]-lt[2])**2 + (ut[0]-lt[1])**2)
         return distance
@@ -439,6 +448,8 @@ def func_upper_lower_distance(ut, lt):
     return distance
 
 # ut lt are tuples ('R', x, y) or ['R', x, y]
+
+
 def if_defeat(ut, lt):
     if (ut[0] == 'S') & (lt[0] == 'p'):
         return 1
@@ -448,5 +459,3 @@ def if_defeat(ut, lt):
         return 1
     else:
         return 0
-
-
