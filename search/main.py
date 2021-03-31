@@ -269,15 +269,22 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
     # if upper_tuple already reached the goal
     possible_random_move = []
     if upper_tuple not in sorted_goal_dict.keys():
+        print('random')
         # check surroundings to make a best decision
         # print(possible_random_move) --> [[1, -3], [2, -4], [3, -4], [2, -2], [1, -2], [4, -4], [4, -3], [3, -2]]
         possible_random_move = func_open_list(
             state, list(open_close_dict[upper_tuple][1][-1]), ['r', 1, 1], 1)
+        print(possible_random_move)
+        #a problem may arise if there is only one possible random move but it is also other token's next move
+        #need to change the next move of that token!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if len(possible_random_move)>1:
+            for upper in open_close_dict.keys():
+                if upper!=upper_tuple:
+                    if open_close_dict[upper][1][-1] in possible_random_move:
+                        possible_random_move.remove(open_close_dict[upper][1][-1])
 
-        for upper in open_close_dict.keys():
-            if open_close_dict[upper][1][-1] in possible_random_move:
-                possible_random_move.remove(open_close_dict[upper][1][-1])
 
+        #print(possible_random_move)
         state[tuple(possible_random_move[0])] = upper_tuple[0]
         if slide_or_swing(open_close_dict[upper_tuple][1][-1], possible_random_move[0]) == 'SWING':
             print_swing(turn, open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple]
@@ -288,10 +295,27 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         open_close_dict[upper_tuple][1].append(possible_random_move[0])
         # delete the previous position upper token is in the state
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
+
+        if len(possible_random_move) == 1:
+            for upper in open_close_dict.keys():
+                if upper!=upper_tuple and open_close_dict[upper][1][-1]==possible_random_move[0]:
+                    print('yessssssssssssssssss herrrrrrrrrrrrrrrrrrrrre')
+                    #此时的state不是最新的，无法通过state找到open list？？？
+                    #知道有冲突的upper token叫 upper
+                    #new_possible_move = [[x,y, cost],[]...]
+                    new_possible_move = func_open_list(state, open_close_dict[upper][1][-2], ['r', 1, 1], 0)
+                    open_close_dict[upper][0] = new_possible_move
+                    min_cost_move = func_min_move(open_close_dict, upper)
+                    #这里需要检查其它upper token -1 是不是和min_cost_move 一样才行！！！！！没有写
+                    if min_cost_move[0:2] == open_close_dict[upper_tuple][1][-1]:
+                        min_cost_move = func_min_move(open_close_dict, upper)
+                    open_close_dict[upper][1][-1] = min_cost_move[0:2]
         return state
 
     else:
         symbol = upper_tuple[0]
+        print('not random')
+        print('......', state)
         state[tuple(open_close_dict[upper_tuple][1][-1])] = symbol
         if slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]) == 'SWING':
             print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
@@ -299,6 +323,7 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
         else:
             print_slide(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
                         open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
+        print('.....', state)
         del state[tuple(open_close_dict[upper_tuple][1][-2])]
         return state
 
