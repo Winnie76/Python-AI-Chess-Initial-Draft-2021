@@ -446,7 +446,7 @@ def func_update_state(turn, upper_tuple, state, open_close_dict, sorted_goal_dic
             print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
                         open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
         else:
-            print_swing(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
+            print_slide(turn, open_close_dict[upper_tuple][1][-2][0], open_close_dict[upper_tuple][1][-2][1],
                         open_close_dict[upper_tuple][1][-1][0], open_close_dict[upper_tuple][1][-1][1])
         # print('Turn ', str(turn), ':', slide_or_swing(open_close_dict[upper_tuple][1][-2], open_close_dict[upper_tuple][1][-1]), ' from ',
         #       tuple(open_close_dict[upper_tuple][1][-2]), ' to ', tuple(open_close_dict[upper_tuple][1][-1]))
